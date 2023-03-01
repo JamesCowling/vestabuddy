@@ -8,7 +8,7 @@ export default function App() {
   async function handleSendMessage(event: FormEvent) {
     event.preventDefault();
     setNewMessageText("");
-    await sendMessage(newMessageText, 60000);
+    await sendMessage(newMessageText, 60);
   }
 
   return (
