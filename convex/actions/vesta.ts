@@ -10,7 +10,10 @@ const SUBSCRIPTION = "c7e97d0e-7913-4638-8c24-4d4048c8c317";
 export async function getVesta(): Promise<string> {
   return fetch(RW_HOST, {
     method: "GET",
-    headers: { "X-Vestaboard-Read-Write-Key": RW_KEY },
+    headers: {
+      "X-Vestaboard-Read-Write-Key": RW_KEY,
+      "Content-Type": "application/json",
+    },
   })
     .then((response) => response.json())
     .then((json) => json.currentMessage.layout);
@@ -19,12 +22,16 @@ export async function getVesta(): Promise<string> {
 export async function setVesta(message: string) {
   await fetch(RW_HOST, {
     method: "POST",
-    headers: { "X-Vestaboard-Read-Write-Key": RW_KEY },
+    headers: {
+      "X-Vestaboard-Read-Write-Key": RW_KEY,
+      "Content-Type": "application/json"
+    },
     body: message,
-  });
+  }).then((response) => response.json())
+  .then((json) => console.log(json.status));
 }
 
-export async function setVestaString(message: string) {
+export async function setVestaString(text: string) {
   await fetch(
     `https://platform.vestaboard.com/subscriptions/${SUBSCRIPTION}/message`,
     {
@@ -33,7 +40,7 @@ export async function setVestaString(message: string) {
         "X-Vestaboard-Api-Key": API_KEY,
         "X-Vestaboard-Api-Secret": API_SECRET,
       },
-      body: `{"text":"${message}"}`,
+      body: `{"text":"${text}"}`,
     }
   );
 }

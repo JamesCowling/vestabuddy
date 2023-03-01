@@ -1,27 +1,15 @@
-import fetch from "node-fetch";
 import { action } from "../_generated/server";
-import { getVesta, setVesta, setVestaString } from "./vesta";
-
-const BACKEND = "https://silent-mosquito-517.convex.cloud/api/action"; // TODO make this dynamic
-const ZEPLO_TOKEN = "LCZNasvAXm791qsDeFwJPiM6VxfAFIC0hgdZZh"; // TODO move to env vars
+import { getVesta, setVestaString } from "./vesta";
 
 export default action(
-  async ({ mutation }, message: string, duration: number) => {
-    // save current vestaboard message
+  async ({ scheduler }, message: string, duration: bigint) => {
+    // Vestaboard rate-limits below 15 seconds.
+    const delay = Math.max(Number(duration), 15);
+
     const current = await getVesta();
-    await mutation("push", current);
-
-    // overwrite the current message with the one provided
+    console.log("setting vestaboard to %s", message);
     await setVestaString(message);
-
-    // ask zeplo to reset the message in 10 seconds
-    await fetch(
-      `https://zeplo.to/${BACKEND}?_delay=${duration}&_token=${ZEPLO_TOKEN}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: '{"path":"actions/reset", "args":[]}',
-      }
-    );
+    console.log("resetting vestaboard in %d s", delay);
+    await scheduler.runAfter(1000 * delay, "actions/reset", current);
   }
 );

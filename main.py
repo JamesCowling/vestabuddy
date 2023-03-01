@@ -1,15 +1,17 @@
-# python3 -m pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ convex
+# pip3 install convex python-dotenv
 
-import sys
-
+import os, sys
 from convex import ConvexClient
-from pprint import pprint
+from dotenv import load_dotenv
 
 if len(sys.argv) != 3:
-    print("<cmd> <message> <seconds>")
+    print(sys.argv[0], "<message> <seconds>")
     sys.exit(0)
 message = sys.argv[1]
 delay = int(sys.argv[2])
 
-client = ConvexClient("https://silent-mosquito-517.convex.cloud")
+load_dotenv(".env.local")
+CONVEX_URL = os.getenv("CONVEX_URL")
+client = ConvexClient(CONVEX_URL)
+
 client.action("actions/post", message, delay)
