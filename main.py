@@ -10,7 +10,7 @@ if len(sys.argv) != 3:
 message = sys.argv[1]
 delay = int(sys.argv[2])
 
-load_dotenv(".env.local")
+load_dotenv(".env")
 CONVEX_URL = os.getenv("CONVEX_URL")
 client = ConvexClient(CONVEX_URL)
 

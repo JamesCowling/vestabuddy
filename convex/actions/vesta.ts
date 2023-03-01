@@ -1,17 +1,16 @@
 import fetch from "node-fetch";
 
-// TODO move keys to env vars
-const RW_KEY = "NjEyNDdmMzEtZWM2NC00NWNmLWJmNzMtYjM4ZDJlNzUwYWYw";
-const RW_HOST = "https://rw.vestaboard.com/";
-const API_KEY = "7b2c1221-5961-4240-bfdd-8e726c51af5c";
-const API_SECRET = "ZjcyYzFjZTUtNzA4Mi00MWM2LWExZDQtYjhhMzZjYWQwNmZl";
-const SUBSCRIPTION = "c7e97d0e-7913-4638-8c24-4d4048c8c317";
+const VESTA_RW_HOST = "https://rw.vestaboard.com/";
+// const VESTA_RW_KEY       = <defined in convex dashboard>
+// const VESTA_API_KEY      = <defined in convex dashboard>
+// const VESTA_API_SECRET   = <defined in convex dashboard>
+// const VESTA_SUBSCRIPTION = <defined in convex dashboard>
 
 export async function getVesta(): Promise<string> {
-  return fetch(RW_HOST, {
+  return fetch(VESTA_RW_HOST!, {
     method: "GET",
     headers: {
-      "X-Vestaboard-Read-Write-Key": RW_KEY,
+      "X-Vestaboard-Read-Write-Key": process.env.VESTA_RW_KEY!,
       "Content-Type": "application/json",
     },
   })
@@ -20,25 +19,27 @@ export async function getVesta(): Promise<string> {
 }
 
 export async function setVesta(message: string) {
-  await fetch(RW_HOST, {
+  await fetch(VESTA_RW_HOST!, {
     method: "POST",
     headers: {
-      "X-Vestaboard-Read-Write-Key": RW_KEY,
-      "Content-Type": "application/json"
+      "X-Vestaboard-Read-Write-Key": process.env.VESTA_RW_KEY!,
+      "Content-Type": "application/json",
     },
     body: message,
-  }).then((response) => response.json())
-  .then((json) => console.log(json.status));
+  })
+    .then((response) => response.json())
+    .then((json) => console.log(json.status));
 }
 
 export async function setVestaString(text: string) {
   await fetch(
-    `https://platform.vestaboard.com/subscriptions/${SUBSCRIPTION}/message`,
+    `https://platform.vestaboard.com/subscriptions/${process.env
+      .VESTA_SUBSCRIPTION!}/message`,
     {
       method: "POST",
       headers: {
-        "X-Vestaboard-Api-Key": API_KEY,
-        "X-Vestaboard-Api-Secret": API_SECRET,
+        "X-Vestaboard-Api-Key": process.env.VESTA_API_KEY!,
+        "X-Vestaboard-Api-Secret": process.env.VESTA_API_SECRET!,
       },
       body: `{"text":"${text}"}`,
     }
