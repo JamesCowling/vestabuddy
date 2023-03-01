@@ -11,7 +11,7 @@ message = sys.argv[1]
 delay = int(sys.argv[2])
 
 load_dotenv(".env")
-CONVEX_URL = os.getenv("CONVEX_URL")
+CONVEX_URL = os.getenv("VITE_CONVEX_URL")
 client = ConvexClient(CONVEX_URL)
 
 client.action("actions/post", message, delay)

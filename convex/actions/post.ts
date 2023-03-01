@@ -2,9 +2,9 @@ import { action } from "../_generated/server";
 import { getVesta, setVestaString } from "./vesta";
 
 export default action(
-  async ({ scheduler }, message: string, duration: bigint) => {
+  async ({ scheduler }, message: string, duration: number) => {
     // Vestaboard rate-limits below 15 seconds.
-    const delay = Math.max(Number(duration), 15);
+    const delay = Math.max(Number(duration), 15); // duration is bigint when called from python
 
     const current = await getVesta();
     console.log("setting vestaboard to %s", message);
