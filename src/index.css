@@ -1,5 +1,5 @@
 .sad-page {
-  background-image: url("sad.jpg");
+  background-image: url("./assets/sad.jpg");
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
@@ -13,7 +13,7 @@
 }
 
 .happy-page {
-  background-image: url("happy.png");
+  background-image: url("./assets/happy.png");
   background-repeat: no-repeat;
   background-attachment: fixed;
   background-size: cover;
