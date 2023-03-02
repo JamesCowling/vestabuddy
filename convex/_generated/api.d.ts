@@ -13,6 +13,7 @@ import type { ApiFromModules } from "convex/api";
 import type * as actions_post from "../actions/post";
 import type * as actions_reset from "../actions/reset";
 import type * as actions_vesta from "../actions/vesta";
+import type * as checkAuth from "../checkAuth";
 
 /**
  * A type describing your app's public Convex API.
@@ -27,4 +28,5 @@ export type API = ApiFromModules<{
   "actions/post": typeof actions_post;
   "actions/reset": typeof actions_reset;
   "actions/vesta": typeof actions_vesta;
+  checkAuth: typeof checkAuth;
 }>;
