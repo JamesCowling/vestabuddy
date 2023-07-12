@@ -12,6 +12,20 @@
   overflow: auto;
 }
 
+.excited-page {
+  background-image: url("/assets/excited.jpg");
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: Arial, Helvetica, sans-serif;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow: auto;
+}
+
 .happy-page {
   background-image: url("/assets/happy.png");
   background-repeat: no-repeat;

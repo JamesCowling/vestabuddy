@@ -4,21 +4,25 @@ import "./index.css";
 import App from "./App";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithAuth0 } from "convex/react-auth0";
-import convexConfig from "../convex.json";
-import LoginPage from "./LoginPage";
+import { Auth0Provider } from "@auth0/auth0-react";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
-const authInfo = convexConfig.authInfo[0];
 
 ReactDOM.render(
   <StrictMode>
-    <ConvexProviderWithAuth0
-      client={convex}
-      authInfo={authInfo}
-      loggedOut={<LoginPage />}
+    <Auth0Provider
+      domain={import.meta.env.VITE_AUTH0_DOMAIN!}
+      clientId={import.meta.env.VITE_AUTH0_CLIENT_ID!}
+      authorizationParams={{
+        redirect_uri: window.location.origin,
+      }}
+      useRefreshTokens={true}
+      cacheLocation="localstorage"
     >
-      <App />
-    </ConvexProviderWithAuth0>
+      <ConvexProviderWithAuth0 client={convex}>
+        <App />
+      </ConvexProviderWithAuth0>
+    </Auth0Provider>
   </StrictMode>,
   document.getElementById("root")
 );
