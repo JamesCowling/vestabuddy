@@ -6,11 +6,11 @@ import { internal } from "./_generated/api";
 export const post = action({
   args: { message: v.string(), duration: v.float64() },
   handler: async ({ scheduler, runQuery }, { message, duration }) => {
+    // Have to comment out this check if we want to call from the python script.
     await runQuery(internal.board.checkAuth, {});
 
     // Vestaboard rate-limits below 15 seconds.
-    // XXX is this still an issue?
-    const delay = Math.max(Number(duration), 15); // duration is bigint when called from python
+    const delay = Math.max(Number(duration), 15);
 
     const current = await getVesta();
     console.log("setting vestaboard to %s", message);

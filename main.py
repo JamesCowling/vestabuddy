@@ -14,4 +14,4 @@ load_dotenv(".env")
 CONVEX_URL = os.getenv("VITE_CONVEX_URL")
 client = ConvexClient(CONVEX_URL)
 
-client.action("actions/post", message, delay)
+client.action("board:post", {"message": message, "duration": delay})
