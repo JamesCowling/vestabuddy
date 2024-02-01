@@ -7,15 +7,18 @@ const VESTA_RW_HOST = "https://rw.vestaboard.com/";
 // const VESTA_SUBSCRIPTION = <defined in convex dashboard>
 
 export async function getVesta(): Promise<string> {
-  return fetch(VESTA_RW_HOST!, {
+  const response = await fetch(VESTA_RW_HOST!, {
     method: "GET",
     headers: {
       "X-Vestaboard-Read-Write-Key": process.env.VESTA_RW_KEY!,
       "Content-Type": "application/json",
     },
-  })
-    .then((response) => response.json())
-    .then((json) => json.currentMessage.layout);
+  });
+  const json = await response.json();
+  if (response.status !== 200) {
+    throw new Error(`${response.status}: ${JSON.stringify(json)}`);
+  }
+  return json.currentMessage.layout;
 }
 
 export async function setVesta(message: string) {
