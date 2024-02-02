@@ -1,8 +1,14 @@
 import { v } from "convex/values";
-import { action, internalAction, internalQuery } from "./_generated/server";
+import {
+  action,
+  internalAction,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import { getVesta, setVesta, setVestaString } from "./vesta";
 import { internal } from "./_generated/api";
 import sha256 from "sha256";
+import { v4 as uuidv4 } from "uuid";
 
 export const post = action({
   args: {
@@ -43,8 +49,6 @@ export const checkAuth = internalQuery({
   handler: async ({ auth, db }, { serviceAcctKey }) => {
     if (serviceAcctKey !== undefined) {
       const hashedKey = sha256(serviceAcctKey);
-      console.log(serviceAcctKey);
-      console.log(hashedKey);
       const serviceAcct = await db
         .query("service_accts")
         .withIndex("by_key", (q) => q.eq("sha256OfKey", hashedKey))
@@ -63,5 +67,16 @@ export const checkAuth = internalQuery({
     if (!identity.email?.endsWith("@convex.dev")) {
       throw new Error("Access restricted to Convex employees");
     }
+  },
+});
+
+/// Call with `npx convex run board:addServiceAcct '{"name": "myserviceacctname"}'`
+export const addServiceAcct = internalMutation({
+  args: { name: v.string() },
+  handler: async (ctx, { name }) => {
+    const key = uuidv4();
+    const sha256OfKey = sha256(key);
+    ctx.db.insert("service_accts", { name, sha256OfKey });
+    return key;
   },
 });
