@@ -1,14 +1,25 @@
 import { v } from "convex/values";
 import {
   action,
+  httpAction,
   internalAction,
   internalMutation,
   internalQuery,
 } from "./_generated/server";
 import { getVesta, setVesta, setVestaString } from "./vesta";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import sha256 from "sha256";
 import { v4 as uuidv4 } from "uuid";
+
+export const postHttp = httpAction(async (ctx, request) => {
+  const { message, duration, serviceAcctKey } = await request.json();
+
+  await ctx.runAction(api.board.post, { message, duration, serviceAcctKey });
+
+  return new Response(null, {
+    status: 200,
+  });
+});
 
 export const post = action({
   args: {
