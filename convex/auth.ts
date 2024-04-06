@@ -14,7 +14,7 @@ export const checkAuth = internalQuery({
         .unique();
       if (serviceAcct !== null) {
         console.log(`Allowing access from service acct ${serviceAcct.name}`);
-        return;
+        return serviceAcct.name;
       }
 
       throw new Error("Invalid serviceAcctKey");
