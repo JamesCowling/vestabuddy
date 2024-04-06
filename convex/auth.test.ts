@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import { internal } from "./_generated/api";
 import schema from "./schema";
 
-test("single message", async () => {
+test("valid accts", async () => {
   const t = convexTest(schema);
   const key1 = await t.mutation(internal.auth.addServiceAcct, {
     name: "acct1",
@@ -20,14 +20,13 @@ test("single message", async () => {
     serviceAcctKey: key2,
   });
   expect(name2).toStrictEqual("acct2");
+});
 
-  /*
-  This test does not seem to work.
-
+test("invalid acct", async () => {
+  const t = convexTest(schema);
   expect(async () => {
     await t.query(internal.auth.checkAuth, {
       serviceAcctKey: "bogus",
     });
-  }).toThrow("Invalid serviceAcctKey");
-  */
+  }).rejects.toThrow("Invalid serviceAcctKey");
 });
