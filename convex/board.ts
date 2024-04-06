@@ -1,5 +1,10 @@
 import { v } from "convex/values";
-import { action, httpAction, internalAction } from "./_generated/server";
+import {
+  action,
+  httpAction,
+  internalAction,
+  internalMutation,
+} from "./_generated/server";
 import { getVesta, setVesta, setVestaString } from "./vesta";
 import { api, internal } from "./_generated/api";
 
@@ -20,7 +25,7 @@ export const post = action({
     serviceAcctKey: v.optional(v.string()),
   },
   handler: async (
-    { scheduler, runQuery },
+    { scheduler, runQuery, runMutation },
     { message, duration, serviceAcctKey }
   ) => {
     // Have to comment out this check if we want to call from the python script.
@@ -30,19 +35,60 @@ export const post = action({
     const delay = Math.max(Number(duration), 15);
 
     const current = await getVesta();
+    runMutation(internal.board.pushResetter, { message: current });
     console.log("setting vestaboard to %s", message);
     await setVestaString(message);
     console.log("resetting vestaboard in %d s", delay);
-    await scheduler.runAfter(1000 * delay, internal.board.reset, {
-      text: current,
-    });
+    await scheduler.runAfter(1000 * delay, internal.board.reset, {});
   },
 });
 
 export const reset = internalAction({
-  args: { text: v.string() },
-  handler: async ({}, { text }) => {
-    console.log("resetting vestaboard to %s", text);
-    await setVesta(text);
+  args: {},
+  handler: async ({ runMutation }, {}) => {
+    const message = await runMutation(internal.board.popResetter, {});
+    if (message !== null) {
+      console.log("resetting vestaboard to %s", message);
+      await setVesta(message);
+    }
+  },
+});
+
+/// Handle multiple messages before the delay period completes
+export const pushResetter = internalMutation({
+  args: { message: v.string() },
+  handler: async ({ db }, { message }) => {
+    const resetCounter = await db.query("resetCounter").unique();
+    if (resetCounter === null) {
+      await db.insert("resetCounter", { message, remainingResetters: 1 });
+    } else {
+      // There's a prior reset. Don't overwrite it, just bump the count.
+      await db.patch(resetCounter._id, {
+        remainingResetters: resetCounter.remainingResetters + 1,
+      });
+    }
+  },
+});
+
+export const popResetter = internalMutation({
+  args: {},
+  handler: async ({ db }) => {
+    const resetCounter = await db.query("resetCounter").unique();
+    if (resetCounter === null) {
+      throw new Error("popResetter called with nothing to reset to?");
+    }
+    if (resetCounter.remainingResetters === 0) {
+      throw new Error("popResetter called with remaining resetters 0?");
+    }
+    if (resetCounter.remainingResetters === 1) {
+      await db.delete(resetCounter._id);
+      return resetCounter.message;
+    } else {
+      // There's more resets coming. Don't do it yet, just decr the count
+      db.patch(resetCounter._id, {
+        remainingResetters: resetCounter.remainingResetters - 1,
+      });
+      return null;
+    }
   },
 });

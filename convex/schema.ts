@@ -6,4 +6,8 @@ export default defineSchema({
     name: v.string(),
     sha256OfKey: v.string(),
   }).index("by_key", ["sha256OfKey"]),
+  resetCounter: defineTable({
+    message: v.string(),
+    remainingResetters: v.number(),
+  }),
 });
