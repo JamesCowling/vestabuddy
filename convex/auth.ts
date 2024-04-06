@@ -29,7 +29,7 @@ export const checkAuth = internalQuery({
   },
 });
 
-/// Call with `npx convex run board:addServiceAcct '{"name": "myserviceacctname"}'`
+/// Call with `npx convex run auth:addServiceAcct '{"name": "myserviceacctname"}'`
 export const addServiceAcct = internalMutation({
   args: { name: v.string() },
   handler: async (ctx, { name }) => {
