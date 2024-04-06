@@ -14,6 +14,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as auth from "../auth.js";
 import type * as board from "../board.js";
 import type * as http from "../http.js";
 import type * as vesta from "../vesta.js";
@@ -27,6 +28,7 @@ import type * as vesta from "../vesta.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   board: typeof board;
   http: typeof http;
   vesta: typeof vesta;
