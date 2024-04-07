@@ -36,9 +36,9 @@ export const post = action({
 
     const current = await getVesta();
     runMutation(internal.board.pushResetter, { message: current });
-    console.log("setting vestaboard to %s", message);
+    console.log(`setting vestaboard to ${message}`);
     await setVestaString(message);
-    console.log("resetting vestaboard in %d s", delay);
+    console.log(`resetting vestaboard in ${delay} s`);
     await scheduler.runAfter(1000 * delay, internal.board.reset, {});
   },
 });
@@ -48,7 +48,7 @@ export const reset = internalAction({
   handler: async ({ runMutation }, {}) => {
     const message = await runMutation(internal.board.popResetter, {});
     if (message !== null) {
-      console.log("resetting vestaboard to %s", message);
+      console.log(`resetting vestaboard to ${message}`);
       await setVesta(message);
     }
   },
