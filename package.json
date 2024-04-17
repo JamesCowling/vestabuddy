@@ -13,27 +13,26 @@
     "test:debug": "vitest --inspect-brk --no-file-parallelism"
   },
   "dependencies": {
-    "@auth0/auth0-react": "^2.1.1",
+    "@auth0/auth0-react": "^2.2.4",
     "convex": "^1.11.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sha256": "^0.2.0",
-    "uuid": "^9.0.1",
-    "vestaboard-api": "^1.1.4"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/babel__core": "^7.20.0",
-    "@types/node": "^18.14.2",
-    "@types/node-fetch": "^2.6.2",
-    "@types/react": "^18.0.28",
-    "@types/react-dom": "^18.0.11",
+    "@types/babel__core": "^7.20.5",
+    "@types/node": "^20.12.7",
+    "@types/node-fetch": "^2.6.11",
+    "@types/react": "^18.2.79",
+    "@types/react-dom": "^18.2.25",
     "@types/sha256": "^0.2.2",
     "@types/uuid": "^9.0.8",
-    "@vitejs/plugin-react": "^3.1.0",
-    "convex-test": "^0.0.4",
+    "@vitejs/plugin-react": "^4.2.1",
+    "convex-test": "^0.0.10",
     "npm-run-all": "^4.1.5",
-    "typescript": "^5.2.2",
-    "vite": "^4.1.4",
-    "vitest": "^1.4.0"
+    "typescript": "^5.4.5",
+    "vite": "^5.2.9",
+    "vitest": "^1.5.0"
   }
 }
