@@ -5,7 +5,7 @@ import {
   internalAction,
   internalMutation,
 } from "./_generated/server";
-import { getVesta, setVesta, setVestaString } from "./vesta";
+import { getLayout, setLayout, setMessage } from "./vesta";
 import { api, internal } from "./_generated/api";
 
 export const postHttp = httpAction(async (ctx, request) => {
@@ -34,10 +34,10 @@ export const post = action({
     // Vestaboard rate-limits below 15 seconds.
     const delay = Math.max(Number(duration), 15);
 
-    const current = await getVesta();
+    const current = await getLayout();
     runMutation(internal.board.pushResetter, { message: current });
     console.log(`setting vestaboard to ${message}`);
-    await setVestaString(message);
+    await setMessage(message);
     console.log(`resetting vestaboard in ${delay} s`);
     await scheduler.runAfter(1000 * delay, internal.board.reset, {});
   },
@@ -49,7 +49,7 @@ export const reset = internalAction({
     const message = await runMutation(internal.board.popResetter, {});
     if (message !== null) {
       console.log(`resetting vestaboard to ${message}`);
-      await setVesta(message);
+      await setLayout(message);
     }
   },
 });

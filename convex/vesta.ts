@@ -1,17 +1,20 @@
+// Basic libraries for reading and writing to a Vestaboard.
+//
+// Requires the VESTA_RW_KEY environment variable to be set in the Convex
+// dashboard. This key is available under the Read/Write API tab in the API
+// section of https://web.vestaboard.com/.
+
 import fetch from "node-fetch";
 
-const VESTA_RW_HOST = "https://rw.vestaboard.com/";
-// const VESTA_RW_KEY       = <defined in convex dashboard>
-// const VESTA_API_KEY      = <defined in convex dashboard>
-// const VESTA_API_SECRET   = <defined in convex dashboard>
-// const VESTA_SUBSCRIPTION = <defined in convex dashboard>
+const RW_HOST = "https://rw.vestaboard.com/";
 
-export async function getVesta(): Promise<string> {
-  const response = await fetch(VESTA_RW_HOST!, {
+/// Get the current layout from the Vestaboard.
+export async function getLayout(): Promise<string> {
+  const response = await fetch(RW_HOST, {
     method: "GET",
     headers: {
-      "X-Vestaboard-Read-Write-Key": process.env.VESTA_RW_KEY!,
       "Content-Type": "application/json",
+      "X-Vestaboard-Read-Write-Key": process.env.VESTA_RW_KEY!,
     },
   });
   const json = await response.json();
@@ -21,30 +24,30 @@ export async function getVesta(): Promise<string> {
   return json.currentMessage.layout;
 }
 
-export async function setVesta(message: string) {
-  await fetch(VESTA_RW_HOST!, {
+/// Set the vestaboard to the encoded message.
+export async function setLayout(layout: string) {
+  const response = await fetch(RW_HOST, {
     method: "POST",
     headers: {
-      "X-Vestaboard-Read-Write-Key": process.env.VESTA_RW_KEY!,
       "Content-Type": "application/json",
+      "X-Vestaboard-Read-Write-Key": process.env.VESTA_RW_KEY!,
     },
-    body: message,
-  })
-    .then((response) => response.json())
-    .then((json) => console.log(json.status));
+    body: layout,
+  });
+  const json = await response.json();
+  console.log(json.status);
 }
 
-export async function setVestaString(text: string) {
-  await fetch(
-    `https://platform.vestaboard.com/subscriptions/${process.env
-      .VESTA_SUBSCRIPTION!}/message`,
-    {
-      method: "POST",
-      headers: {
-        "X-Vestaboard-Api-Key": process.env.VESTA_API_KEY!,
-        "X-Vestaboard-Api-Secret": process.env.VESTA_API_SECRET!,
-      },
-      body: `{"text":"${text}"}`,
-    }
-  );
+/// Set the Vestaboard to the given text string.
+export async function setMessage(text: string) {
+  const response = await fetch(RW_HOST, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Vestaboard-Read-Write-Key": process.env.VESTA_RW_KEY!,
+    },
+    body: JSON.stringify({ text: text }),
+  });
+  const json = await response.json();
+  console.log(json.status);
 }
