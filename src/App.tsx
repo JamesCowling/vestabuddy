@@ -4,7 +4,7 @@ import {
   AuthLoading,
   Authenticated,
   Unauthenticated,
-  useAction,
+  useMutation,
 } from "convex/react";
 import { api } from "../convex/_generated/api";
 
@@ -34,7 +34,7 @@ function LoggedIn() {
   const { logout } = useAuth0();
 
   const [newMessageText, setNewMessageText] = useState("");
-  const sendMessage = useAction(api.board.post);
+  const sendMessage = useMutation(api.board.post);
 
   async function handleSendMessage(event: FormEvent) {
     event.preventDefault();
