@@ -26,6 +26,7 @@ export async function getLayout(): Promise<string> {
 
 /// Set the vestaboard to the encoded message.
 export async function setLayout(layout: string) {
+  console.log(`setting vestaboard to layout ${layout}`);
   const response = await fetch(RW_HOST, {
     method: "POST",
     headers: {
@@ -40,6 +41,7 @@ export async function setLayout(layout: string) {
 
 /// Set the Vestaboard to the given text string.
 export async function setMessage(text: string) {
+  console.log(`setting vestaboard to text ${text}`);
   const response = await fetch(RW_HOST, {
     method: "POST",
     headers: {

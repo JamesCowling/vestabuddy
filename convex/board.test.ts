@@ -1,44 +1,127 @@
-import { convexTest } from "convex-test";
-import { expect, test } from "vitest";
-import { internal } from "./_generated/api";
+import { expect, test, vi, beforeEach, afterEach } from "vitest";
+
+// Mock out Vestaboard functionality so we're not talking to the real thing.
+vi.mock("./vesta", () => {
+  let vestaboardLayout = "[[init]]";
+  return {
+    getLayout: vi.fn(() => vestaboardLayout),
+    setLayout: vi.fn((layout) => (vestaboardLayout = layout)),
+    setMessage: vi.fn((text) => (vestaboardLayout = `[[${text}]]`)),
+  };
+});
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 import schema from "./schema";
+import { convexTest } from "convex-test";
+import { getLayout } from "./vesta";
+import { api, internal } from "./_generated/api";
 
-test("single message", async () => {
+// Make sure a post shows up on the vestaboard and then is reset.
+test("postAuthed", async () => {
   const t = convexTest(schema);
-  await t.mutation(internal.board.pushResetter, { message: "msg1" });
-  const msg = await t.mutation(internal.board.popResetter, {});
-  expect(msg).toStrictEqual("msg1");
+  const initLayout = await getLayout();
+
+  const postMessage = "testytesttest";
+  await t.action(internal.board.postAuthed, {
+    message: postMessage,
+    duration: 60,
+  });
+  vi.advanceTimersByTime(30 * 1000);
+
+  expect(await getLayout()).toStrictEqual(`[[${postMessage}]]`); // while posted
+
+  // XXX I want to move this to a separate function but oddly if I do so I get:
+  // Error: Timers are not mocked. Try calling "vi.useFakeTimers()" first.
+  for (let i = 0; i < 100; i++) {
+    vi.runAllTimers();
+    await t.finishInProgressScheduledFunctions();
+  }
+  expect(await getLayout()).toStrictEqual(initLayout); // after reset
 });
 
-test("double message", async () => {
+// XXX This is a version of postAuthed that uses an auth identity. It doesn't
+// seem to scheduled jobs to completion and it also doesn't show console logs.
+test.skip("post", async () => {
   const t = convexTest(schema);
-  await t.mutation(internal.board.pushResetter, { message: "msg1" });
-  await t.mutation(internal.board.pushResetter, { message: "msg2" });
-  const pop1 = await t.mutation(internal.board.popResetter, {});
-  expect(pop1).toStrictEqual(null);
-  const pop2 = await t.mutation(internal.board.popResetter, {});
-  expect(pop2).toStrictEqual("msg1");
+  const initLayout = await getLayout();
+  console.log(`initLayout: ${initLayout}`); // initLayout: [[init]
+
+  const asJames = t.withIdentity({
+    name: "James",
+    email: "no-reply@convex.dev",
+    emailVerified: true,
+  });
+
+  const postMessage = "testytesttest";
+  await asJames.mutation(api.board.post, {
+    message: postMessage,
+    duration: 60,
+  });
+  vi.advanceTimersByTime(30 * 1000);
+
+  expect(await getLayout()).toStrictEqual(`[[${postMessage}]]`); // while posted
+
+  // XXX There appears to be a bug with the test framework here. `resetIfNeeded`
+  // is scheduled but it never runs.
+  for (let i = 0; i < 100; i++) {
+    vi.runAllTimers();
+    await t.finishInProgressScheduledFunctions();
+  }
+
+  expect(await getLayout()).toStrictEqual(initLayout); // after reset
 });
 
-test("triple message", async () => {
+// Make sure reset works even with a bunch of concurrent messages.
+test("reset", async () => {
   const t = convexTest(schema);
-  await t.mutation(internal.board.pushResetter, { message: "msg1" });
-  await t.mutation(internal.board.pushResetter, { message: "msg2" });
-  await t.mutation(internal.board.pushResetter, { message: "msg3" });
-  const pop1 = await t.mutation(internal.board.popResetter, {});
-  expect(pop1).toStrictEqual(null);
-  const pop2 = await t.mutation(internal.board.popResetter, {});
-  expect(pop2).toStrictEqual(null);
-  const pop3 = await t.mutation(internal.board.popResetter, {});
-  expect(pop3).toStrictEqual("msg1");
+  const initLayout = await getLayout();
+
+  for (let i = 0; i < 3; i++) {
+    await t.action(internal.board.postAuthed, {
+      message: `test${i}`,
+      duration: 60,
+    });
+    vi.advanceTimersByTime(30 * 1000);
+  }
+
+  for (let i = 0; i < 100; i++) {
+    vi.runAllTimers();
+    await t.finishInProgressScheduledFunctions();
+  }
+  expect(await getLayout()).toStrictEqual(initLayout); // after reset
 });
 
-test("message reset and another message", async () => {
+test("auth", async () => {
   const t = convexTest(schema);
-  await t.mutation(internal.board.pushResetter, { message: "msg1" });
-  const msg = await t.mutation(internal.board.popResetter, {});
-  expect(msg).toStrictEqual("msg1");
-  await t.mutation(internal.board.pushResetter, { message: "msg2" });
-  const msg2 = await t.mutation(internal.board.popResetter, {});
-  expect(msg2).toStrictEqual("msg2");
+
+  // Employee
+  const asJames = t.withIdentity({
+    name: "James",
+    email: "no-reply@convex.dev",
+    emailVerified: true,
+  });
+  await asJames.mutation(api.board.post, { message: "test", duration: 60 });
+
+  // Impostor
+  const asJomes = t.withIdentity({
+    name: "Jomes",
+    email: "no-reply@comvex.dev",
+    emailVerified: true,
+  });
+  expect(async () => {
+    await asJomes.mutation(api.board.post, { message: "test", duration: 60 });
+  }).rejects.toThrow("Access restricted to Convex employees");
+
+  for (let i = 0; i < 100; i++) {
+    vi.runAllTimers();
+    await t.finishInProgressScheduledFunctions();
+  }
 });
+
+// TODO: Once I figure out what's going on with the tests, change them all to
+// use t.withIdentity. Then add a test for service key login.

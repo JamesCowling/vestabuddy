@@ -1,6 +1,6 @@
 {
   "name": "vestabuddy",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "scripts": {
     "dev": "npm-run-all init dev:init --parallel dev:server dev:client",
     "build": "vite build",
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.2.4",
+    "bcrypt": "^5.1.1",
     "convex": "^1.11.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
+    "@types/bcrypt": "^5.0.2",
     "@types/node": "^20.12.7",
     "@types/node-fetch": "^2.6.11",
     "@types/react": "^18.2.79",

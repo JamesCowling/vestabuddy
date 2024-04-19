@@ -31,7 +31,7 @@ function Loading() {
 }
 
 function LoggedIn() {
-  const { user, logout } = useAuth0();
+  const { logout } = useAuth0();
 
   const [newMessageText, setNewMessageText] = useState("");
   const sendMessage = useAction(api.board.post);
@@ -39,39 +39,38 @@ function LoggedIn() {
   async function handleSendMessage(event: FormEvent) {
     event.preventDefault();
     setNewMessageText("");
-    await sendMessage({ message: newMessageText, duration: 60 });
+    try {
+      await sendMessage({ message: newMessageText, duration: 60 });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   }
 
-  if (!user?.email?.endsWith("@convex.dev")) {
-    logout({ logoutParams: { returnTo: window.location.origin } });
-    return <main></main>;
-  } else {
-    return (
-      <main className="happy-page">
-        <div className="center">
-          <button
-            onClick={() =>
-              logout({ logoutParams: { returnTo: window.location.origin } })
-            }
-          >
-            Log out
-          </button>
-          <h1>Vestabuddy</h1>
-          <p>send a message to the Vestaboard for one minute:</p>
-          <form onSubmit={handleSendMessage}>
-            <input
-              value={newMessageText}
-              size={45}
-              maxLength={132}
-              onChange={(event) => setNewMessageText(event.target.value)}
-              placeholder="Write a message…"
-            />
-            <input type="submit" value="Send" disabled={!newMessageText} />
-          </form>
-        </div>
-      </main>
-    );
-  }
+  return (
+    <main className="happy-page">
+      <div className="center">
+        <button
+          onClick={() =>
+            logout({ logoutParams: { returnTo: window.location.origin } })
+          }
+        >
+          Log out
+        </button>
+        <h1>Vestabuddy</h1>
+        <p>send a message to the Vestaboard for one minute:</p>
+        <form onSubmit={handleSendMessage}>
+          <input
+            value={newMessageText}
+            size={45}
+            maxLength={132}
+            onChange={(event) => setNewMessageText(event.target.value)}
+            placeholder="Write a message…"
+          />
+          <input type="submit" value="Send" disabled={!newMessageText} />
+        </form>
+      </div>
+    </main>
+  );
 }
 
 export default function App() {
