@@ -4,8 +4,7 @@ import { convexTest } from "convex-test";
 import { checkAuth, checkServiceKey } from "./auth";
 import { internal } from "./_generated/api";
 
-// XXX This test fails because the test runtime doesn't support crypto.
-test.skip("service key", async () => {
+test("service key", async () => {
   const t = convexTest(schema);
 
   // Valid service key.
@@ -22,8 +21,7 @@ test.skip("service key", async () => {
   });
 });
 
-// XXX I think this test fails because the test runtime doesn't support crypto.
-test.skip("user identity", async () => {
+test("user identity", async () => {
   const t = convexTest(schema);
 
   // Valid employee.
