@@ -31,7 +31,6 @@ test("postAuthed", async () => {
     message: postMessage,
     duration: 60,
   });
-  vi.advanceTimersByTime(30 * 1000);
 
   expect(await getLayout()).toStrictEqual(`[[${postMessage}]]`); // while posted
 
