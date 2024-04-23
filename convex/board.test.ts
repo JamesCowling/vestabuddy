@@ -47,9 +47,7 @@ async function runScheduledFunctionsUntilCompletion(t: TestConvex<any>) {
   }
 }
 
-// XXX This is a version of postAuthed that uses an auth identity. It doesn't
-// seem to scheduled jobs to completion and it also doesn't show console logs.
-test.skip("post", async () => {
+test("post", async () => {
   const t = convexTest(schema);
   const initLayout = await getLayout();
   console.log(`initLayout: ${initLayout}`); // initLayout: [[init]
@@ -66,15 +64,11 @@ test.skip("post", async () => {
     duration: 60,
   });
   vi.advanceTimersByTime(30 * 1000);
+  await t.finishInProgressScheduledFunctions();
 
   expect(await getLayout()).toStrictEqual(`[[${postMessage}]]`); // while posted
 
-  // XXX There appears to be a bug with the test framework here. `resetIfNeeded`
-  // is scheduled but it never runs.
-  for (let i = 0; i < 100; i++) {
-    vi.runAllTimers();
-    await t.finishInProgressScheduledFunctions();
-  }
+  await runScheduledFunctionsUntilCompletion(t);
 
   expect(await getLayout()).toStrictEqual(initLayout); // after reset
 });
