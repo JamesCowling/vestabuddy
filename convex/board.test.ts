@@ -21,35 +21,19 @@ import { convexTest, TestConvex } from "convex-test";
 import { getLayout } from "./vesta";
 import { api, internal } from "./_generated/api";
 
-// Make sure a post shows up on the vestaboard and then is reset.
-test("postAuthed", async () => {
-  const t = convexTest(schema);
-  const initLayout = await getLayout();
-
-  const postMessage = "testytesttest";
-  await t.action(internal.board.postAuthed, {
-    message: postMessage,
-    duration: 60,
-  });
-
-  expect(await getLayout()).toStrictEqual(`[[${postMessage}]]`); // while posted
-
-  await runScheduledFunctionsUntilCompletion(t);
-
-  expect(await getLayout()).toStrictEqual(initLayout); // after reset
-});
-
-async function runScheduledFunctionsUntilCompletion(t: TestConvex<any>) {
+// Some scheduled functions schedule other functions, so we need to advance
+// time and finish in progress functions to fully drain the execution chain.
+async function drainScheduler(t: TestConvex<any>) {
   for (let i = 0; i < 100; i++) {
     vi.runAllTimers();
     await t.finishInProgressScheduledFunctions();
   }
 }
 
+// Make sure a post shows up on the vestaboard and then is reset.
 test("post", async () => {
   const t = convexTest(schema);
   const initLayout = await getLayout();
-  console.log(`initLayout: ${initLayout}`); // initLayout: [[init]
 
   const asJames = t.withIdentity({
     name: "James",
@@ -62,13 +46,12 @@ test("post", async () => {
     message: postMessage,
     duration: 60,
   });
+
   vi.advanceTimersByTime(30 * 1000);
   await t.finishInProgressScheduledFunctions();
-
   expect(await getLayout()).toStrictEqual(`[[${postMessage}]]`); // while posted
 
-  await runScheduledFunctionsUntilCompletion(t);
-
+  await drainScheduler(t);
   expect(await getLayout()).toStrictEqual(initLayout); // after reset
 });
 
@@ -77,47 +60,75 @@ test("reset", async () => {
   const t = convexTest(schema);
   const initLayout = await getLayout();
 
+  const asJames = t.withIdentity({
+    name: "James",
+    email: "no-reply@convex.dev",
+    emailVerified: true,
+  });
+
   for (let i = 0; i < 3; i++) {
-    await t.action(internal.board.postAuthed, {
+    await asJames.action(internal.board.postAuthed, {
       message: `test${i}`,
       duration: 60,
     });
     vi.advanceTimersByTime(30 * 1000);
   }
 
-  for (let i = 0; i < 100; i++) {
-    vi.runAllTimers();
-    await t.finishInProgressScheduledFunctions();
-  }
-  expect(await getLayout()).toStrictEqual(initLayout); // after reset
+  await drainScheduler(t);
+  expect(await getLayout()).toStrictEqual(initLayout);
 });
 
-test("auth", async () => {
+// User auth.
+test("user", async () => {
   const t = convexTest(schema);
 
-  // Employee
+  // Employee.
   const asJames = t.withIdentity({
     name: "James",
     email: "no-reply@convex.dev",
     emailVerified: true,
   });
-  await asJames.mutation(api.board.post, { message: "test", duration: 60 });
+  await asJames.mutation(api.board.post, {
+    message: "yep",
+    duration: 60,
+  });
 
-  // Impostor
+  // Impostor.
   const asJomes = t.withIdentity({
     name: "Jomes",
     email: "no-reply@comvex.dev",
     emailVerified: true,
   });
   expect(async () => {
-    await asJomes.mutation(api.board.post, { message: "test", duration: 60 });
+    await asJomes.mutation(api.board.post, {
+      message: "nop",
+      duration: 60,
+    });
   }).rejects.toThrow("Access restricted to Convex employees");
 
-  for (let i = 0; i < 100; i++) {
-    vi.runAllTimers();
-    await t.finishInProgressScheduledFunctions();
-  }
+  await drainScheduler(t);
 });
 
-// TODO: Once I figure out what's going on with the tests, change them all to
-// use t.withIdentity. Then add a test for service key login.
+// Service key auth.
+test("service", async () => {
+  const t = convexTest(schema);
+
+  // Valid service.
+  const key = await t.mutation(internal.auth.addServiceKey, { name: "test" });
+  await t.mutation(api.board.post, {
+    message: "yay",
+    duration: 60,
+    serviceKey: key,
+  });
+
+  // Invalid service.
+  await expect(
+    t.mutation(api.board.post, {
+      message: "nay",
+      duration: 60,
+      serviceKey: "hunter2",
+    })
+  ).rejects.toThrow("Invalid serviceKey");
+
+  await drainScheduler(t);
+});

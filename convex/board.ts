@@ -76,7 +76,6 @@ export const scheduleReset = internalMutation({
         pendingResets: resetBuffer.pendingResets + 1,
       });
     }
-    console.log(`scheduling resetIfNeeded() in ${delay}s`);
     await ctx.scheduler.runAfter(
       1000 * delay,
       internal.board.resetIfNeeded,
@@ -88,7 +87,6 @@ export const scheduleReset = internalMutation({
 // Resets the layout if this is the last remaining temporary message.
 export const resetIfNeeded = internalMutation({
   handler: async (ctx, args) => {
-    console.log(`resetIfNeeded()`);
     const resetBuffer = await ctx.db.query("resetBuffer").unique();
     if (resetBuffer === null || resetBuffer.pendingResets < 1) {
       throw new Error("attempting to reset with no pending state");
@@ -98,11 +96,9 @@ export const resetIfNeeded = internalMutation({
       await ctx.db.patch(resetBuffer._id, {
         pendingResets: resetBuffer.pendingResets - 1,
       });
-      console.log(`skipping reset, ${resetBuffer.pendingResets} pending`);
       return;
     }
     await ctx.db.delete(resetBuffer._id);
-    console.log(`scheduling reset(${resetBuffer.originalLayout}) in 0s`);
     await ctx.scheduler.runAfter(0, internal.board.reset, {
       layout: resetBuffer.originalLayout,
     });
@@ -113,7 +109,6 @@ export const resetIfNeeded = internalMutation({
 export const reset = internalAction({
   args: { layout: v.string() },
   handler: async (ctx, { layout }) => {
-    console.log(`reset(${layout})`);
     await setLayout(layout);
   },
 });
