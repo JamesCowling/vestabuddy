@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 import schema from "./schema";
-import { convexTest } from "convex-test";
+import { convexTest, TestConvex } from "convex-test";
 import { getLayout } from "./vesta";
 import { api, internal } from "./_generated/api";
 
@@ -35,14 +35,17 @@ test("postAuthed", async () => {
 
   expect(await getLayout()).toStrictEqual(`[[${postMessage}]]`); // while posted
 
-  // XXX I want to move this to a separate function but oddly if I do so I get:
-  // Error: Timers are not mocked. Try calling "vi.useFakeTimers()" first.
+  await runScheduledFunctionsUntilCompletion(t);
+
+  expect(await getLayout()).toStrictEqual(initLayout); // after reset
+});
+
+async function runScheduledFunctionsUntilCompletion(t: TestConvex<any>) {
   for (let i = 0; i < 100; i++) {
     vi.runAllTimers();
     await t.finishInProgressScheduledFunctions();
   }
-  expect(await getLayout()).toStrictEqual(initLayout); // after reset
-});
+}
 
 // XXX This is a version of postAuthed that uses an auth identity. It doesn't
 // seem to scheduled jobs to completion and it also doesn't show console logs.
