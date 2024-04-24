@@ -17,18 +17,9 @@ afterEach(() => {
 });
 
 import schema from "./schema";
-import { convexTest, TestConvex } from "convex-test";
+import { convexTest } from "convex-test";
 import { getLayout } from "./vesta";
 import { api, internal } from "./_generated/api";
-
-// Some scheduled functions schedule other functions, so we need to advance
-// time and finish in progress functions to fully drain the execution chain.
-async function drainScheduler(t: TestConvex<any>) {
-  for (let i = 0; i < 100; i++) {
-    vi.runAllTimers();
-    await t.finishInProgressScheduledFunctions();
-  }
-}
 
 // Make sure a post shows up on the vestaboard and then is reset.
 test("post", async () => {
@@ -51,7 +42,7 @@ test("post", async () => {
   await t.finishInProgressScheduledFunctions();
   expect(await getLayout()).toStrictEqual(`[[${postMessage}]]`); // while posted
 
-  await drainScheduler(t);
+  await t.finishAllScheduledFunctions(vi.runAllTimers);
   expect(await getLayout()).toStrictEqual(initLayout); // after reset
 });
 
@@ -74,7 +65,7 @@ test("reset", async () => {
     vi.advanceTimersByTime(30 * 1000);
   }
 
-  await drainScheduler(t);
+  await t.finishAllScheduledFunctions(vi.runAllTimers);
   expect(await getLayout()).toStrictEqual(initLayout);
 });
 
@@ -106,7 +97,7 @@ test("user", async () => {
     });
   }).rejects.toThrow("Access restricted to Convex employees");
 
-  await drainScheduler(t);
+  await t.finishAllScheduledFunctions(vi.runAllTimers);
 });
 
 // Service key auth.
@@ -127,8 +118,8 @@ test("service", async () => {
       message: "nay",
       duration: 60,
       serviceKey: "hunter2",
-    })
+    }),
   ).rejects.toThrow("Invalid serviceKey");
 
-  await drainScheduler(t);
+  await t.finishAllScheduledFunctions(vi.runAllTimers);
 });
