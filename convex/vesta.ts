@@ -18,7 +18,7 @@ export async function getLayout(): Promise<string> {
     },
   });
   const json = await response.json();
-  if (response.status !== 200) {
+  if (!response.ok) {
     throw new Error(`${response.status}: ${JSON.stringify(json)}`);
   }
   return json.currentMessage.layout;
@@ -36,6 +36,9 @@ export async function setLayout(layout: string) {
     body: layout,
   });
   const json = await response.json();
+  if (!response.ok) {
+    throw new Error(`${response.status}: ${JSON.stringify(json)}`);
+  }
   console.log(json.status);
 }
 
@@ -51,5 +54,8 @@ export async function setMessage(text: string) {
     body: JSON.stringify({ text: text }),
   });
   const json = await response.json();
+  if (!response.ok) {
+    throw new Error(`${response.status}: ${JSON.stringify(json)}`);
+  }
   console.log(json.status);
 }
