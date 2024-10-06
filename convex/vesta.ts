@@ -17,10 +17,11 @@ export async function getLayout(): Promise<string> {
       "X-Vestaboard-Read-Write-Key": process.env.VESTA_RW_KEY!,
     },
   });
-  const json = await response.json();
+  const respText = await response.text();
   if (!response.ok) {
-    throw new Error(`${response.status}: ${JSON.stringify(json)}`);
+    throw new Error(`${response.status}: ${respText}`);
   }
+  const json = JSON.parse(respText);
   return json.currentMessage.layout;
 }
 
@@ -35,10 +36,11 @@ export async function setLayout(layout: string) {
     },
     body: layout,
   });
-  const json = await response.json();
+  const respText = await response.text();
   if (!response.ok) {
-    throw new Error(`${response.status}: ${JSON.stringify(json)}`);
+    throw new Error(`${response.status}: ${respText}`);
   }
+  const json = JSON.parse(respText);
   console.log(json.status);
 }
 
@@ -53,9 +55,10 @@ export async function setMessage(text: string) {
     },
     body: JSON.stringify({ text: text }),
   });
-  const json = await response.json();
+  const respText = await response.text();
   if (!response.ok) {
-    throw new Error(`${response.status}: ${JSON.stringify(json)}`);
+    throw new Error(`${response.status}: ${respText}`);
   }
+  const json = JSON.parse(respText);
   console.log(json.status);
 }
