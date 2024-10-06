@@ -4,11 +4,7 @@
 // protecting a Vestaboard. I think we'll be okay.
 
 import { v } from "convex/values";
-import {
-  DatabaseReader,
-  internalMutation,
-  internalQuery,
-} from "./_generated/server";
+import { DatabaseReader, internalMutation } from "./_generated/server";
 import { Auth } from "convex/server";
 
 /// Generate a random key.

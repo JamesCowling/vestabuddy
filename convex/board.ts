@@ -86,7 +86,8 @@ export const scheduleReset = internalMutation({
 
 // Resets the layout if this is the last remaining temporary message.
 export const resetIfNeeded = internalMutation({
-  handler: async (ctx, args) => {
+  args: {},
+  handler: async (ctx) => {
     const resetBuffer = await ctx.db.query("resetBuffer").unique();
     if (resetBuffer === null || resetBuffer.pendingResets < 1) {
       throw new Error("attempting to reset with no pending state");
@@ -108,7 +109,7 @@ export const resetIfNeeded = internalMutation({
 // Wrapper action to call setLayout on Vestaboard.
 export const reset = internalAction({
   args: { layout: v.string() },
-  handler: async (ctx, { layout }) => {
+  handler: async (_ctx, { layout }) => {
     await setLayout(layout);
   },
 });
